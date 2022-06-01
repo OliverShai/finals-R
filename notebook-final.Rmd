@@ -1,0 +1,33 @@
+---
+title: "R Finals"
+output: html_notebook
+---
+
+# Introdução
+Trabalho final da disciplina de *R para Ciência de Dados*, da EPGE. Usando dados estatísticos da Secretaria de Segurança Pública do Estado de São Paulo, disponíveis para download direto em https://basedosdados.org/dataset/br-sp-gov-ssp, estando também disponível no repositório desse projeto.
+
+Utilizaremos também a planilha de informações dos municípios do estado de São Paulo elaborada pelo IBGE, disponível para download direto em  https://www.ibge.gov.br/cidades-e-estados/sp/sao-paulo.html e também disponível no repositório.
+
+# Preparação
+## Importando os pacotes
+```{r}
+install.packages("tidyverse")
+
+library(tidyverse)
+```
+
+## Importando a base de dados
+
+Verificando o formato do CSV (para evitar erros com o delimitador, por exemplo)
+```{r}
+read_lines("ocorrencias_registradas.csv", n_max = 2)
+```
+Podemos utilizar o leitor de CSv padrão
+```{r}
+ssp <- read_csv("ocorrencias_registradas.csv")
+```
+
+Também utilizaremos a planilha do IBGE com os municípios do estado de São Paulo. Pulamos as duas primeiras linhas, que não contém dados.
+```{r}
+mun <- read_excel("sp-municipios.xlsx", na="-", skip = 2)
+```
