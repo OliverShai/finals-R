@@ -28,6 +28,8 @@ ssp <- read_csv("ocorrencias_registradas.csv")
 ```
 
 Também utilizaremos a planilha do IBGE com os municípios do estado de São Paulo. Pulamos as duas primeiras linhas, que não contém dados.
+
 ```{r}
 mun <- read_excel("sp-municipios.xlsx", na="-", skip = 2)
 ```
+
