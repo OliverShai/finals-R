@@ -14,7 +14,7 @@ Utilizaremos também a planilha de informações dos municípios do estado de S�
 install.packages("tidyverse")
 
 library(tidyverse)
-library(readxl)
+library(readxl) #necessário carregar separadamente
 ```
 
 ## Importando a base de dados
@@ -23,14 +23,62 @@ Verificando o formato do CSV (para evitar erros com o delimitador, por exemplo)
 ```{r}
 read_lines("ocorrencias_registradas.csv", n_max = 2)
 ```
+
 Podemos utilizar o leitor de CSv padrão
 ```{r}
 ssp <- read_csv("ocorrencias_registradas.csv")
 ```
 
-Também utilizaremos a planilha do IBGE com os municípios do estado de São Paulo. Pulamos as duas primeiras linhas, que não contém dados.
+Também utilizaremos a planilha do IBGE com os municípios do estado de São Paulo. Pulamos as duas primeiras linhas, que não contém dados. Parando na linha 645, pois daí em diante temos metadados e fontes.  
 
 ```{r}
-mun <- read_excel("sp-municipios.xlsx", na="-", skip = 2)
+mun <- read_excel("sp-municipios.xlsx", na="-", skip = 2, n_max = 645)
+```
+
+## Primeiras olhadas nos DFs
+
+Certificar que estamos utilizando dataframes do tipo Tibble. 
+```{r}
+class(ssp)
+class(mun)
+```
+### Dataframe principal (SSP)
+```{r}
+spec(ssp)
+```
+```{r}
+meta_ssp <- names(ssp)
+meta_ssp
+```
+
+```{r}
+head(ssp)
+```
+
+### Dataframe secundário (MUN)
+
+```{r}
+head(mun)
+```
+
+```{r}
+meta_mun <- names(mun)
+meta_mun
+```
+## Limpando os dados
+
+
+Primeiro, retiramos colunas desnecessárias do MUN. 
+```{r}
+mun2 <- mun %>%
+  select(!c(3,4,11,12))
+
+names(mun2)
+```
+Depois, renomeamos as colunas por questão de simplificação. 
+
+```{r}
+colnames(mun2) <- c("mun", "id", "area", "pop", "den", "escol", "idh", "mort_inf", "PIB_percap")
+names(mun2)
 ```
 
