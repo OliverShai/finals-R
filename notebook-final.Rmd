@@ -43,39 +43,50 @@ class(ssp)
 class(mun)
 ```
 ### Dataframe principal (SSP)
+
+Vamos verificar os nomes das colunas e o tipo do dado de cada uma.
+
 ```{r}
 spec(ssp)
 ```
+Vamos salvar os nomes das colunas em uma variável chamada "meta_ssp".
 ```{r}
 meta_ssp <- names(ssp)
 meta_ssp
 ```
-
+E olharemos os primeiros 6 registros de nossa tabela.
 ```{r}
 head(ssp)
 ```
 
+
 ### Dataframe secundário (MUN)
+
+Seguiremos o mesmo processo para esse dataframe.
+
+```{r}
+spec(mun)
+```
+```{r}
+meta_mun <- names(mun)
+meta_mun
+```
 
 ```{r}
 head(mun)
 ```
 
-```{r}
-meta_mun <- names(mun)
-meta_mun
-```
 ## Limpando os dados
 
 
-Primeiro, retiramos colunas desnecessárias do MUN. 
+Primeiro, retiramos algumas colunas que consideramos desnecessárias para a nossa análise na tabela mun (Gentílico, Prefeito, Receitas e Despesas) 
 ```{r}
 mun2 <- mun %>%
   select(!c(3,4,11,12))
 
 names(mun2)
 ```
-Depois, renomeamos as colunas por questão de simplificação. 
+Depois, renomeamos as colunas por questão de simplificação.
 
 ```{r}
 colnames(mun2) <- c("mun", "id", "area", "pop", "den", "escol", "idh", "mort_inf", "PIB_percap")
