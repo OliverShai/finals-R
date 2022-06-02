@@ -4,9 +4,9 @@ output: html_notebook
 ---
 
 # Introdução
-Trabalho final da disciplina de *R para Ciência de Dados*, da EPGE. Usando dados estatísticos da Secretaria de Segurança Pública do Estado de São Paulo, disponíveis para download direto em https://basedosdados.org/dataset/br-sp-gov-ssp, estando também disponível no repositório desse projeto.
+O seguinte projeto é o trabalho final da disciplina de *Introdução ao R Aplicado em Ciência de Dados*, da EPGE.
 
-Utilizaremos também a planilha de informações dos municípios do estado de São Paulo elaborada pelo IBGE, disponível para download direto em  https://www.ibge.gov.br/cidades-e-estados/sp/sao-paulo.html e também disponível no repositório.
+Utilizaremos dados estatísticos da Secretaria de Segurança Pública do Estado de São Paulo, disponíveis para download em https://basedosdados.org/dataset/br-sp-gov-ssp, e a planilha de informações dos municípios do estado de São Paulo, elaborada pelo IBGE e disponível em https://www.ibge.gov.br/cidades-e-estados/sp/sao-paulo.html. Os dois arquivos .csv baixados já estão no repositório GitHub desse projeto, e portanto, tendo-o clonado na sua máquina, não é necessário realizar o download nas fontes.
 
 # Preparação
 ## Importando os pacotes
@@ -14,22 +14,22 @@ Utilizaremos também a planilha de informações dos municípios do estado de S�
 install.packages("tidyverse")
 
 library(tidyverse)
-library(readxl) #necessário carregar separadamente
+library(readxl) #apesar de ser baixado no pacote "tidyverse", precisamos carregar separadamente
 ```
 
 ## Importando a base de dados
 
-Verificando o formato do CSV (para evitar erros com o delimitador, por exemplo)
+Lendo duas linhas do arquivo para verificar o formato do CSV (evitando assim erros com o delimitador no momento de salvar os dados, por exemplo)
 ```{r}
 read_lines("ocorrencias_registradas.csv", n_max = 2)
 ```
+Já podemos reparar que teremos dados NA na nossa base, porém resolveremos isso mais a diante. Como o separador é vírgula, podemos utilizar o leitor de CSV padrão.
 
-Podemos utilizar o leitor de CSv padrão
 ```{r}
 ssp <- read_csv("ocorrencias_registradas.csv")
 ```
 
-Também utilizaremos a planilha do IBGE com os municípios do estado de São Paulo. Pulamos as duas primeiras linhas, que não contém dados. Parando na linha 645, pois daí em diante temos metadados e fontes.  
+Também utilizaremos a planilha do IBGE com os municípios do estado de São Paulo. Analisando os dados, percebemos que as duas primeiras linhas não contém dados, e após a linha 645, temos metadados e fontes da base. Também reparamos que o símbolo "-" é utilizado para representar NA. Todos esses detalhes foram considerados ao ler o arquivo no projeto. 
 
 ```{r}
 mun <- read_excel("sp-municipios.xlsx", na="-", skip = 2, n_max = 645)
@@ -37,7 +37,7 @@ mun <- read_excel("sp-municipios.xlsx", na="-", skip = 2, n_max = 645)
 
 ## Primeiras olhadas nos DFs
 
-Certificar que estamos utilizando dataframes do tipo Tibble. 
+Vamos verificar se estamos utilizando dataframes do tipo Tibble. 
 ```{r}
 class(ssp)
 class(mun)
