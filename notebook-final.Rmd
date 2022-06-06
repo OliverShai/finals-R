@@ -121,3 +121,29 @@ ssp2 <- ssp %>%
 head(ssp2)
 ```
 
+# Glossário de Variáveis
+
+Agora que já limpamos os dados, podemos fazer um glossário de nossas variáveis.
+
+### Dataframe SSP2
+
+|Variável |   Descrição|
+|-----|--------|
+|nome|Nome do município do estado de São Paulo      |
+
+### Dataframe MUN2
+
+|Variável |   Descrição|
+|-----|--------|
+|nome|Nome do município do estado de São Paulo      |
+|id_municipio|ID do município no banco de dados do IBGE    |
+|area|Área territorial em km² em 2021|
+|pop|População estimada em 2021|
+|den|Densidade demográfica em habitantes por km² em 2010|
+|escol|Porcentagem de escolarização em pessoas entre 6 e 14 anos em 2010|
+|idh|IDHM - Índice de desenvolvimento humano municipal em 2010|
+|mort_inf|Mortalidade infantil em óbitos por mil nascidos vivos em 2020|
+|PIB_percap|PIB per capita em reais em 2019|
+
+
+
