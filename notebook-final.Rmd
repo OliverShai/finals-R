@@ -6,7 +6,8 @@ output: html_notebook
 # Introdução
 O seguinte projeto é o trabalho final da disciplina de *Introdução ao R Aplicado em Ciência de Dados*, da EPGE.
 
-Utilizaremos dados estatísticos da Secretaria de Segurança Pública do Estado de São Paulo, disponíveis para download em https://basedosdados.org/dataset/br-sp-gov-ssp, e a planilha de informações dos municípios do estado de São Paulo, elaborada pelo IBGE e disponível em https://www.ibge.gov.br/cidades-e-estados/sp/sao-paulo.html. Os dois arquivos .csv baixados já estão no repositório GitHub desse projeto, e portanto, tendo-o clonado na sua máquina, não é necessário realizar o download nas fontes.
+Utilizaremos dados estatísticos da Secretaria de Segurança Pública do Estado de São Paulo, disponíveis para download em https://basedosdados.org/dataset/br-sp-gov-ssp, e a planilha de informações dos municípios do estado de São Paulo, elaborada pelo IBGE e disponível em https://www.ibge.gov.br/cidades-e-estados/sp/sao-paulo.html. Ambos com acessos em 07/05/2022.
+Os dois arquivos .csv baixados já estão no repositório GitHub desse projeto, e portanto, tendo-o clonado na sua máquina, não é necessário realizar o download nas fontes.
 
 # Preparação
 ## Importando os pacotes
@@ -96,10 +97,10 @@ mun2 <- mun %>%
 
 names(mun2)
 ```
-Depois, renomeamos as colunas por questão de simplificação.
+Depois, renomeamos as colunas por questão de simplificação, abreviando os nomes originais. Além disso, a coluna código é alterada para id_município de forma a manter o mesmo nome nos dois DFs, para que seja possível um join. 
 
 ```{r}
-colnames(mun2) <- c("nome", "id_municipio", "area", "pop", "den", "escol", "idh", "mort_inf", "PIB_percap")
+colnames(mun2) <- c("nome", "id_municipio", "area", "pop", "den", "escol", "idh", "mort_inf", "pib_percap")
 names(mun2)
 ```
 
@@ -108,15 +109,16 @@ Para o dataset principal, podemos trocar o ID do município pelo seu nome. Mas p
 ```{r}
 all((unique(ssp$id_municipio)), (mun2$id_municipio))
 ```
-Sim! Podemos prosseguir com a limpeza do dataframe. Utilizamos a tabela MUN2 para substituir o id do município pelo nome. Também substituimos as colunas de ano e mes por uma com a data completa no formato lubridate.  
+Sim! Podemos prosseguir com a limpeza do dataframe. Utilizamos a função de inner join para substituir o id do município em SSP pelo seu nome, que está presente apenas no dataset MUN2. Substituimos as colunas de ano e mes por uma com a data completa no formato lubridate, deixando 1 como o dia padrão. Também percebemos que a partir da data 09/2021, todas as entradas são NA, então retiramos esses registros.
 
 ```{r}
 ssp2 <- ssp %>%
-  inner_join(mun2[,c("nome","id_municipio")],by = "id_municipio") %>%
-  relocate("nome", .before = "id_municipio") %>%
-  select(!id_municipio) %>%
-  mutate(data = make_date(ano,mes,1),.before=ano) %>%
-  select(-ano, -mes)
+  inner_join(mun2[,c("nome","id_municipio")],by = "id_municipio") %>% # faz o inner join
+  relocate("nome", .before = "id_municipio") %>% # reposiciona a coluna nome
+  select(!id_municipio) %>% # remove a coluna id
+  mutate(data = make_date(ano,mes,1),.before=ano) %>% # transforma as colunas mes e ano em uma de data
+  select(-ano, -mes) %>%  # remove as colunas de mes e ano 
+  filter(data < ymd("2021-09-01")) # remove os registros após 09/2021
 
 head(ssp2)
 ```
@@ -127,9 +129,35 @@ Agora que já limpamos os dados, podemos fazer um glossário de nossas variávei
 
 ### Dataframe SSP2
 
+
 |Variável |   Descrição|
 |-----|--------|
-|nome|Nome do município do estado de São Paulo      |
+|data|Ano e mês no formato lubridate, usando 1 como dia padrão|
+|nome|Nome do município|
+|regiao_ssp|Região definida pela Secretaria de Segurança Pública|
+|homicidio_doloso|Homicídio quando se tem a intenção de matar (inclui acidente de trânsito)|
+|numero_de_vitimas_em_homicidio_doloso|Vítimas de homicídio doloso (inclui acidente de trânsito)|
+|homicidio_doloso_por_acidente_de_transito|Homicídio por acidentes de trânsito com intenção de matar|
+|numero_de_vitimas_em_homicidio_doloso_por_acidente_de_transito|Vítimas de homicídio doloso em acidentes de trânsito|
+|homicidio_culposo_por_acidente_de_transito|Homicídio por acidentes de trânsito sem intenção de matar|
+|homicidio_culposo_outros|Homicídio culposo (exclui acidente de trânsito)|
+|tentativa_de_homicidio|Tentativa de homicídio|
+|lesao_corporal_seguida_de_morte|Lesão corporal dolosa seguida de homicídio culposo|
+|lesao_corporal_dolosa|Lesão corporal dolosa sem resultado em morte|
+|lesao_corporal_culposa_por_acidente_de_transito|Lesão corporal sem intenção de ferir ocorrida por acidente de trânsito|
+|lesao_corporal_culposa_outras|Lesão corporal sem inteção de ferir (exclui acidente de trânsito)|
+|latrocinio|Roubo seguido de morte|
+|numero_de_vitimas_em_latrocinio|Vítimas de roubo seguido de morte|
+|total_de_estupro|Soma das variáveis de estupro e estupro de vulnerável|
+|estupro|Estupro|
+|estupro_de_vulneravel|Estupro de vítima vulnerável|
+|total_de_roubo_outros|Soma das variáveis roubo_outros, roubo_a_banco e roubo_de_carga|
+|roubo_outros|Subtração patrimonial com ameaça ou violência (não inclui veículo, banco ou cargas)|
+|roubo_de_veiculo|Roubo de veículos|
+|roubo_a_banco|Roubo a banco|
+|roubo_de_carga|Roubo de carga|
+|furto_outros|Subtração patrimonial sem ameaça ou violência (não inclui veículo)|
+|furto_de_veiculo|Furto de veículo|
 
 ### Dataframe MUN2
 
@@ -145,5 +173,19 @@ Agora que já limpamos os dados, podemos fazer um glossário de nossas variávei
 |mort_inf|Mortalidade infantil em óbitos por mil nascidos vivos em 2020|
 |PIB_percap|PIB per capita em reais em 2019|
 
+# Análise e Visualização de dados
 
+```{r}
+unique(ssp2$regiao_ssp)
+```
+
+
+```{r}
+ssp2 %>% 
+  filter(nome == c("Campinas", "Guarulhos", "São Bernardo do Campo", "Santo André", "São José dos Campos", "Ribeirão Preto")) %>%
+  ggplot(aes(x=data,y=homicidio_doloso)) + 
+  geom_line() +
+  geom_smooth()+
+  facet_wrap(vars(nome), scales="free")
+```
 
