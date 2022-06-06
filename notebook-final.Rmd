@@ -53,10 +53,9 @@ Vamos verificar os nomes das colunas e o tipo do dado de cada uma.
 ```{r}
 spec(ssp)
 ```
-Vamos salvar os nomes das colunas em uma variável chamada "meta_ssp".
+Vamos imprimir os nomes das colunas do dataframe.
 ```{r}
-meta_ssp <- names(ssp)
-meta_ssp
+names(ssp)
 ```
 E olharemos os primeiros 6 registros de nossa tabela.
 ```{r}
@@ -75,8 +74,7 @@ A análise desses dados estatísticos não faz sentido para todas as varíaveis 
 Seguiremos o mesmo processo para esse dataframe.
 
 ```{r}
-meta_mun <- names(mun)
-meta_mun
+names(mun)
 ```
 
 ```{r}
@@ -179,13 +177,31 @@ Agora que já limpamos os dados, podemos fazer um glossário de nossas variávei
 unique(ssp2$regiao_ssp)
 ```
 
+```{r}
+maisPop4 <- mun2 %>%
+  arrange(desc(pop)) %>% 
+  head(4) %>% 
+  pull(nome)
+
+maisPop4
+```
 
 ```{r}
 ssp2 %>% 
-  filter(nome == c("Campinas", "Guarulhos", "São Bernardo do Campo", "Santo André", "São José dos Campos", "Ribeirão Preto")) %>%
+  filter(nome == maisPop4) %>%
   ggplot(aes(x=data,y=homicidio_doloso)) + 
   geom_line() +
   geom_smooth()+
   facet_wrap(vars(nome), scales="free")
+```
+```{r}
+ssp2 %>% 
+  filter(nome == "São Paulo") %>%
+  ggplot(aes(x=data))+
+  geom_line(aes(y=furto_outros)) +
+  geom_line(aes(y=furto_de_veiculo)) +
+  geom_line(aes(y=roubo_de_carga)) +
+  geom_line(aes(y=roubo_a_banco))
+  
 ```
 
