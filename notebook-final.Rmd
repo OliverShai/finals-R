@@ -12,9 +12,12 @@ Utilizaremos dados estatísticos da Secretaria de Segurança Pública do Estado 
 ## Importando os pacotes
 ```{r}
 install.packages("tidyverse")
+install.packages("psych")
 
 library(tidyverse)
 library(readxl) #apesar de ser baixado no pacote "tidyverse", precisamos carregar separadamente
+library(psych)
+library(lubridate) # tambem parte do tidyverse
 ```
 
 ## Importando a base de dados
@@ -59,14 +62,17 @@ E olharemos os primeiros 6 registros de nossa tabela.
 head(ssp)
 ```
 
+Por fim, daremos uma olhada em dados estatísticos (desvio padrão, média, mediana, mínimo, máximo e outros) de nossas colunas. 
+
+```{r}
+describe(ssp)
+```
+A análise desses dados estatísticos não faz sentido para todas as varíaveis (por exemplo, não faz sentido calcular a média, desvio padrão, etc, de ano e mês) e, como há muitos dados, para outras faria mais sentido fazer uma investigação anual (é muito mais relevante comparar a média de crimes por ano e se ela está crescendo ou diminuindo do que apenas ver a média do dataset completo). Análises mais complexas serão feitas na seção de Visualização de Dados do projeto.
 
 ### Dataframe secundário (MUN)
 
 Seguiremos o mesmo processo para esse dataframe.
 
-```{r}
-spec(mun)
-```
 ```{r}
 meta_mun <- names(mun)
 meta_mun
@@ -75,6 +81,10 @@ meta_mun
 ```{r}
 head(mun)
 ```
+```{r}
+describe(mun)
+```
+
 
 ## Limpando os dados
 
@@ -89,7 +99,25 @@ names(mun2)
 Depois, renomeamos as colunas por questão de simplificação.
 
 ```{r}
-colnames(mun2) <- c("mun", "id", "area", "pop", "den", "escol", "idh", "mort_inf", "PIB_percap")
+colnames(mun2) <- c("nome", "id_municipio", "area", "pop", "den", "escol", "idh", "mort_inf", "PIB_percap")
 names(mun2)
+```
+
+Para o dataset principal, podemos trocar o ID do município pelo seu nome. Mas primeiro, será que temos os mesmos municípios nos dois datasets?
+
+```{r}
+all((unique(ssp$id_municipio)), (mun2$id_municipio))
+```
+Sim! Podemos prosseguir com a limpeza do dataframe. Utilizamos a tabela MUN2 para substituir o id do município pelo nome. Também substituimos as colunas de ano e mes por uma com a data completa no formato lubridate.  
+
+```{r}
+ssp2 <- ssp %>%
+  inner_join(mun2[,c("nome","id_municipio")],by = "id_municipio") %>%
+  relocate("nome", .before = "id_municipio") %>%
+  select(!id_municipio) %>%
+  mutate(data = make_date(ano,mes,1),.before=ano) %>%
+  select(-ano, -mes)
+
+head(ssp2)
 ```
 
