@@ -198,7 +198,8 @@ ssp2 %>%
 ssp2 %>% 
   filter(nome == "São Paulo") %>%
   ggplot(aes(x=data))+
-  geom_line(aes(y=furto_outros))
+  geom_line(aes(y=total_de_roubo_outros))+
+  geom_line(aes(y=furto_outros, color="red"))
   
 ```
 

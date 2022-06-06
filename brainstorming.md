@@ -3,7 +3,7 @@
 
 - melhorar as séries por município facetadas
 - fazer um separado para SP capital
-- 
+- WTFFF nos dados de "total de roubo outros" e "roubo outros"??????
 
 
 ## Ideias, perguntas e etc
