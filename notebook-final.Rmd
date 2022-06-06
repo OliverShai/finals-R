@@ -190,7 +190,7 @@ maisPop4
 ssp2 %>% 
   filter(nome == maisPop4) %>%
   ggplot(aes(x=data,y=homicidio_doloso)) + 
-  geom_line() +
+  geom_area() +
   geom_smooth()+
   facet_wrap(vars(nome), scales="free")
 ```
@@ -198,10 +198,7 @@ ssp2 %>%
 ssp2 %>% 
   filter(nome == "São Paulo") %>%
   ggplot(aes(x=data))+
-  geom_line(aes(y=furto_outros)) +
-  geom_line(aes(y=furto_de_veiculo)) +
-  geom_line(aes(y=roubo_de_carga)) +
-  geom_line(aes(y=roubo_a_banco))
+  geom_line(aes(y=furto_outros))
   
 ```
 
