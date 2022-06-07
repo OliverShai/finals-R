@@ -202,4 +202,17 @@ ssp2 %>%
   geom_line(aes(y=furto_outros, color="red"))
   
 ```
+```{r}
+ssp2 %>% 
+  filter(nome == "Campinas") %>%
+  ggplot(aes(x=data))+
+  geom_line(aes(y=roubo_de_veiculo))+
+  geom_line(aes(y=furto_de_veiculo, color="red"))
+```
+Podemos tentar deixar os dados anualizados, para simplificar os gráficos?
+```{r}
+```
+
+
+
 
