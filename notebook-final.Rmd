@@ -48,7 +48,7 @@ class(mun)
 ```
 ### Dataframe principal (SSP)
 
-Vamos verificar os nomes das colunas e o tipo do dado de cada uma.
+Vamos qverificar os nomes das colunas e o tipo do dado de cada uma.
 
 ```{r}
 spec(ssp)
@@ -107,7 +107,7 @@ Para o dataset principal, podemos trocar o ID do município pelo seu nome. Mas p
 ```{r}
 all((unique(ssp$id_municipio)), (mun2$id_municipio))
 ```
-Sim! Podemos prosseguir com a limpeza do dataframe. Utilizamos a função de inner join para substituir o id do município em SSP pelo seu nome, que está presente apenas no dataset MUN2. Substituimos as colunas de ano e mes por uma com a data completa no formato lubridate, deixando 1 como o dia padrão. Também percebemos que a partir da data 09/2021, todas as entradas são NA, então retiramos esses registros.
+Sim! Podemos prosseguir com a limpeza do dataframe. Utilizamos a função de inner join para substituir o id do município em SSP pelo seu nome, que está presente apenas no dataset MUN2. Colocamos uma coluna nova, utilizando as colunas de ano e mes, criando uma com a data completa no formato lubridate, deixando 1 como o dia padrão. Também percebemos que a partir da data 09/2021, todas as entradas são NA, então retiramos esses registros.
 
 ```{r}
 ssp2 <- ssp %>%
@@ -115,7 +115,6 @@ ssp2 <- ssp %>%
   relocate("nome", .before = "id_municipio") %>% # reposiciona a coluna nome
   select(!id_municipio) %>% # remove a coluna id
   mutate(data = make_date(ano,mes,1),.before=ano) %>% # transforma as colunas mes e ano em uma de data
-  select(-ano, -mes) %>%  # remove as colunas de mes e ano 
   filter(data < ymd("2021-09-01")) # remove os registros após 09/2021
 
 head(ssp2)
@@ -202,6 +201,7 @@ ssp2 %>%
   geom_line(aes(y=furto_outros, color="red"))
   
 ```
+
 ```{r}
 ssp2 %>% 
   filter(nome == "Campinas") %>%
@@ -209,8 +209,13 @@ ssp2 %>%
   geom_line(aes(y=roubo_de_veiculo))+
   geom_line(aes(y=furto_de_veiculo, color="red"))
 ```
-Podemos tentar deixar os dados anualizados, para simplificar os gráficos?
+
+Podemos tentar deixar os dados anualizados, para simplificar os gráficos?  https://stackoverflow.com/questions/1660124/how-to-sum-a-variable-by-group 
+
 ```{r}
+ssp_anual <- ssp2 %>% 
+  group_by(nome,ano) %>% 
+  summarise(across(where(is.numeric),sum))
 ```
 
 
