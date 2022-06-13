@@ -12,8 +12,9 @@ Os dois arquivos .csv baixados já estão no repositório GitHub desse projeto, 
 # Preparação
 ## Importando os pacotes
 ```{r}
-install.packages("tidyverse")
-install.packages("psych")
+# Descomente se você não tiver os pacotes:
+# install.packages("tidyverse")
+# install.packages("psych")
 
 library(tidyverse)
 library(readxl) #apesar de ser baixado no pacote "tidyverse", precisamos carregar separadamente
@@ -191,23 +192,34 @@ ssp2 %>%
   ggplot(aes(x=data,y=homicidio_doloso)) + 
   geom_area() +
   geom_smooth()+
-  facet_wrap(vars(nome), scales="free")
-```
-```{r}
-ssp2 %>% 
-  filter(nome == "São Paulo") %>%
-  ggplot(aes(x=data))+
-  geom_line(aes(y=total_de_roubo_outros))+
-  geom_line(aes(y=furto_outros, color="red"))
-  
+  facet_wrap(vars(nome), scales="free") +
+  labs(x = "Data", y = "Homicídio Doloso",
+       title = "Homocídio doloso nas quatro maiores cidades de SP")
+
 ```
 
 ```{r}
 ssp2 %>% 
-  filter(nome == "Campinas") %>%
+  filter(nome == "São Paulo") %>%
   ggplot(aes(x=data))+
-  geom_line(aes(y=roubo_de_veiculo))+
-  geom_line(aes(y=furto_de_veiculo, color="red"))
+  geom_line(aes(y=total_de_roubo_outros, color = "Total de Roubos"))+
+  geom_line(aes(y=furto_outros, color = "Total de Furtos")) +
+  labs(x = "Data", y = "Total",
+       title = "Total de roubos e furtos na cidade de São Paulo") +
+  scale_color_manual(name = "Colors", 
+                     values = c("Total de Roubos" = "blue", "Total de Furtos" = "red"))
+```
+
+```{r}
+ssp2 %>% 
+  filter(nome == "São Paulo") %>%
+  ggplot(aes(x=data))+
+  geom_line(aes(y=roubo_de_veiculo, color = "Roubo de Veículos"))+
+  geom_line(aes(y=furto_de_veiculo, color="Furto de Veículos")) +
+  labs(x = "Data", y = "Total",
+       title = "Total de roubos e furtos de veículo na cidade de São Paulo") +
+  scale_color_manual(name = "Colors", 
+                     values = c("Roubo de Veículos" = "blue", "Furto de Veículos" = "red"))
 ```
 
 Podemos tentar deixar os dados anualizados, para simplificar os gráficos?  https://stackoverflow.com/questions/1660124/how-to-sum-a-variable-by-group 
