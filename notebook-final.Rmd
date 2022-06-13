@@ -1,5 +1,6 @@
 ---
 title: "R Finals"
+author: "Shai Vaz, Maisa Fraiz" 
 output: html_notebook
 ---
 
@@ -19,9 +20,9 @@ Os dois arquivos .csv baixados já estão no repositório GitHub desse projeto, 
 
 library(tidyverse)
 library(readxl) #apesar de ser baixado no pacote "tidyverse", precisamos carregar separadamente
-library(psych)
+library(psych) #usamos para a função describe
 library(lubridate) # tambem parte do tidyverse
-library(ggh4x)
+library(ggh4x) #para conditional area fill lineplot
 ```
 
 ## Importando a base de dados
@@ -187,6 +188,7 @@ maisPop4 <- mun2 %>%
 
 maisPop4
 ```
+## Séries Históricas
 
 Gráfico da taxa de homicídio doloso nas 4 maiores cidades, facetado.  
 ```{r}
@@ -228,7 +230,7 @@ ssp2 %>%
                      values = c("Roubo de Veículos" = "blue", "Furto de Veículos" = "red"))
 ```
 
-Podemos tentar deixar os dados anualizados, para simplificar os gráficos?  https://stackoverflow.com/questions/1660124/how-to-sum-a-variable-by-group 
+Podemos tentar deixar os dados anualizados, para simplificar os gráficos? 
 
 ```{r}
 ssp_anual <- ssp2 %>% 
@@ -246,7 +248,7 @@ ssp_anual %>%
   geom_line(aes(y=roubo_de_veiculo, color = "Roubo de Veículos"))+
   geom_line(aes(y=furto_de_veiculo, color="Furto de Veículos")) +
   labs(x = "Data", y = "Total",
-       title = "Total de roubos e furtos de veículo na cidade de São Paulo") +
+       title = "Área da diferença entre roubos e furtos de veículo na cidade de São Paulo") +
   scale_color_manual(name = "Colors", 
                      values = c("Roubo de Veículos" = "blue", "Furto de Veículos" = "red")) +
   ggh4x::stat_difference(aes(ymin = roubo_de_veiculo, ymax = furto_de_veiculo), alpha = 0.3, show.legend = FALSE) #da biblioteca ggh4x
@@ -262,12 +264,16 @@ ssp_taxas2020 <- ssp_anual %>%
   inner_join(mun2, by = "nome") %>% 
   mutate(furto_taxa = furto_outros/pop*100000, homicidio_taxa = homicidio_doloso/pop*100000) 
 ```
+## Gráficos de Dispersão
 
+### Furto vs IDH e PIB 
 Comparando furto e IDH municipal.
 
 ```{r}
 ggplot(ssp_taxas2020, aes(x=idh, y=furto_taxa)) + 
-    geom_point()
+    geom_point() +
+  labs(x="IDH Municipal", y="Furtos / 100mil hab",
+       title = "Dispersão IDH vs Furtos por 100mil hab")
 ```
 
 Removemos o outlier:
@@ -282,14 +288,18 @@ Em 2020 a cidade com maior número de roubos por 100 mil habitantes foi "Ilha Co
 ssp_taxas2020 %>% 
   filter(nome != "Ilha Comprida") %>% 
   ggplot(aes(x=idh, y=furto_taxa)) + 
-    geom_point()
+    geom_point() +
+  labs(x="IDH Municipal", y="Furtos / 100mil hab",
+       title = "Dispersão IDH vs Furtos por 100mil hab s/ Outlier")
 ```
 
 Comparamos furto contra PIB per capita. 
 
 ```{r}
 ggplot(ssp_taxas2020, aes(x=pib_percap, y=furto_taxa)) + 
-    geom_point()
+    geom_point() +
+  labs(x="PIB per capita", y="Furtos / 100mil hab",
+       title = "Dispersão PIB vs Furtos por 100mil hab")
 ```
 Retiramos outliers.
 
@@ -297,23 +307,58 @@ Retiramos outliers.
 ssp_taxas2020 %>% 
   filter(pib_percap < 1.5*10^5 & furto_taxa <4000) %>% 
   ggplot(aes(x=pib_percap, y=furto_taxa)) + 
-    geom_point()
+    geom_point() +
+  labs(x="PIB per capita", y="Furtos / 100mil hab",
+       title = "Dispersão IDH vs Furtos por 100mil hab s/ Outliers")
 ```
-
+### Homicídio vs IDH e PIB  
 Homicídio doloso contra IDH.
 
 ```{r}
 ssp_taxas2020 %>% 
-  filter(homicidio_doloso > 0) %>% 
+  filter(homicidio_doloso > 0) %>% #apenas os valores positivos
   ggplot(aes(x=idh, y=homicidio_taxa)) + 
     geom_point()
 ```
 Homicídio doloso contra PIB per capita.
+```{r}
+ssp_taxas2020 %>% 
+  filter(homicidio_taxa > 0) %>% 
+  ggplot(aes(x=pib_percap, y=homicidio_taxa)) + 
+  geom_point()
+```
 
 ```{r}
 ssp_taxas2020 %>% 
   filter(pib_percap < 1.5*10^5 & homicidio_taxa > 0) %>% 
   ggplot(aes(x=pib_percap, y=homicidio_taxa)) + 
-  geom_point()
+  geom_point() +
+  geom_smooth(method = "gam")
 ```
+
+# Referências
+
+### Fontes de tecnicas de programação em R
+
+- https://github.com/swirldev/swirl_courses/tree/master/R_Programming. Acessos durante o semestre.
+- https://github.com/sysilviakim/swirl-tidy , acessos durante o semestre.
+- Wickhan & Grolemund, **R for Data Science**. Disponível em https://r4ds.had.co.nz/. Acessos durante o semestre. 
+- Cheat Sheets Rstudio https://www.rstudio.com/resources/cheatsheets/. Utilizamos as de Ggplot2, Dplyr, Lubridate e RMarkdown.
+- Aprendendo a usar Rstudio aliado ao Github https://happygitwithr.com/index.html. Acesso em 30/05/2022.
+
+### Fontes específicas de código
+
+- Legendas para múltiplos geom_line https://stackoverflow.com/questions/34379268/ggplot-and-two-different-geom-line-the-legend-does-not-appear acesso em 13/06/2022
+- Scatterplot https://r-graph-gallery.com/272-basic-scatterplot-with-ggplot2.html acesso em 13/06/2022
+- Time series with conditional area fill https://r-graph-gallery.com/web-time-series-and-facetting.html. Acesso 13/06/2022.
+- Soma de varáveis por grupo (uso do helper "where") com dplyr https://stackoverflow.com/questions/1660124/how-to-sum-a-variable-by-group. Acesso em 12/06/2022.
+- Uso de faceting https://r-graph-gallery.com/223-faceting-with-ggplot2.html. Acesso em 06/06/2022.
+- Uso de joins https://rpubs.com/odenipinedo/joining-data-with-dplyr. Acesso em 06/06/2022.
+- Uso da função psych::describe https://www.rdocumentation.org/packages/psych/versions/1.0-17/topics/describe acesso em 06/06/2022.
+
+
+
+
+
+
 
