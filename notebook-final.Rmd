@@ -15,11 +15,13 @@ Os dois arquivos .csv baixados já estão no repositório GitHub desse projeto, 
 # Descomente se você não tiver os pacotes:
 # install.packages("tidyverse")
 # install.packages("psych")
+# devtools::install_github("teunbrand/ggh4x")
 
 library(tidyverse)
 library(readxl) #apesar de ser baixado no pacote "tidyverse", precisamos carregar separadamente
 library(psych)
 library(lubridate) # tambem parte do tidyverse
+library(ggh4x)
 ```
 
 ## Importando a base de dados
@@ -186,17 +188,19 @@ maisPop4 <- mun2 %>%
 maisPop4
 ```
 
+Gráfico da taxa de homicídio doloso nas 4 maiores cidades, facetado.  
 ```{r}
 ssp2 %>% 
   filter(nome == maisPop4) %>%
   ggplot(aes(x=data,y=homicidio_doloso)) + 
-  geom_area() +
-  geom_smooth()+
+  geom_area(color="red", fill="red", alpha=0.3) +
+  geom_smooth(color="brown")+
   facet_wrap(vars(nome), scales="free") +
   labs(x = "Data", y = "Homicídio Doloso",
        title = "Homocídio doloso nas quatro maiores cidades de SP")
 
 ```
+Percebemos uma tendência forte de queda da taxa de homicídios nas maiores cidades do estado quando analisamos a dinâmica de longo prazo. 
 
 ```{r}
 ssp2 %>% 
@@ -209,7 +213,9 @@ ssp2 %>%
   scale_color_manual(name = "Colors", 
                      values = c("Total de Roubos" = "blue", "Total de Furtos" = "red"))
 ```
+Vemos que tanto os roubos (menos numerosos) quanto os furtos (mais numerosos) têm tido uma tendência de crescimento durante a série histórica. Notamos também a queda brusca com o lockdown no início de 2020, com retorno à tendência de crescimentos após alguns meses. 
 
+Pensamos na existência de um trade-off entre furto e roubo de veículos, dada a necessidade de uma logística para desmonte, venda de peças, etc. Qual o tipo de crime mais recorrente entre os dois? 
 ```{r}
 ssp2 %>% 
   filter(nome == "São Paulo") %>%
@@ -227,9 +233,87 @@ Podemos tentar deixar os dados anualizados, para simplificar os gráficos?  http
 ```{r}
 ssp_anual <- ssp2 %>% 
   group_by(nome,ano) %>% 
-  summarise(across(where(is.numeric),sum))
+  summarise(across(where(is.numeric),sum)) %>% 
+  select(-mes)
 ```
 
+Simplificamos o gráfico com as taxas anualizadas. 
 
+```{r}
+ssp_anual %>% 
+  filter(nome == "São Paulo") %>%
+  ggplot(aes(x=ano))+
+  geom_line(aes(y=roubo_de_veiculo, color = "Roubo de Veículos"))+
+  geom_line(aes(y=furto_de_veiculo, color="Furto de Veículos")) +
+  labs(x = "Data", y = "Total",
+       title = "Total de roubos e furtos de veículo na cidade de São Paulo") +
+  scale_color_manual(name = "Colors", 
+                     values = c("Roubo de Veículos" = "blue", "Furto de Veículos" = "red")) +
+  ggh4x::stat_difference(aes(ymin = roubo_de_veiculo, ymax = furto_de_veiculo), alpha = 0.3, show.legend = FALSE) #da biblioteca ggh4x
+```
 
+Utilizando as taxas anualizadas, criamos outro df apenas com os dados de 2020 das variáveis furto_outros e homicidio_doloso, realizando um inner join com a tabela mun2 pela variável nome (semelhante ao que fizemos anteriormente para inserir o nome na tabela ssp2).
+Além disso, criamos novas variáveis com as taxas de roubo e homicídio doloso por 100mil habitantes. 
+
+```{r}
+ssp_taxas2020 <- ssp_anual %>% 
+  filter(ano == 2020) %>% 
+  select(furto_outros, homicidio_doloso) %>% 
+  inner_join(mun2, by = "nome") %>% 
+  mutate(furto_taxa = furto_outros/pop*100000, homicidio_taxa = homicidio_doloso/pop*100000) 
+```
+
+Comparando furto e IDH municipal.
+
+```{r}
+ggplot(ssp_taxas2020, aes(x=idh, y=furto_taxa)) + 
+    geom_point()
+```
+
+Removemos o outlier:
+
+```{r}
+ssp_taxas2020 %>% 
+  filter(furto_taxa>4000)
+```
+Em 2020 a cidade com maior número de roubos por 100 mil habitantes foi "Ilha Comprida".  
+
+```{r}
+ssp_taxas2020 %>% 
+  filter(nome != "Ilha Comprida") %>% 
+  ggplot(aes(x=idh, y=furto_taxa)) + 
+    geom_point()
+```
+
+Comparamos furto contra PIB per capita. 
+
+```{r}
+ggplot(ssp_taxas2020, aes(x=pib_percap, y=furto_taxa)) + 
+    geom_point()
+```
+Retiramos outliers.
+
+```{r}
+ssp_taxas2020 %>% 
+  filter(pib_percap < 1.5*10^5 & furto_taxa <4000) %>% 
+  ggplot(aes(x=pib_percap, y=furto_taxa)) + 
+    geom_point()
+```
+
+Homicídio doloso contra IDH.
+
+```{r}
+ssp_taxas2020 %>% 
+  filter(homicidio_doloso > 0) %>% 
+  ggplot(aes(x=idh, y=homicidio_taxa)) + 
+    geom_point()
+```
+Homicídio doloso contra PIB per capita.
+
+```{r}
+ssp_taxas2020 %>% 
+  filter(pib_percap < 1.5*10^5 & homicidio_taxa > 0) %>% 
+  ggplot(aes(x=pib_percap, y=homicidio_taxa)) + 
+  geom_point()
+```
 
